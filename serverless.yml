@@ -1,16 +1,132 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+---
 org: intro
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: Quiztopia
-
 provider:
   name: aws
   runtime: nodejs20.x
+  region: eu-north-1
+  environment:
+    USERS_TABLE: ${env:USERS_TABLE}
+    QUIZ_TABLE: ${env:QUIZ_TABLE}
+    QUESTIONS_TABLE: ${env:QUESTIONS_TABLE}
+    LEADERBOARD_TABLE: ${env:LEADERBOARD_TABLE}
+    JWT_KEY: ${env:JWT_KEY}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - !Sub arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${USERS_TABLE}
+            - !Sub arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${QUIZ_TABLE}
 
 functions:
-  hello:
-    handler: handler.hello
+  ## USERS ROUTES ##
+  RegisterAccount:
+    handler: functions/Users/Register/index.handler
     events:
       - httpApi:
-          path: /
+          path: /auth/signup
+          method: post
+  LoginAccount:
+    handler: functions/Users/Login/index.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+  ## QUIZ ROUTES ##
+  AddQuiz:
+    handler: functions/Quiz/AddQuiz/index.handler
+    events:
+      - httpApi:
+          path: /quiz
+          method: post
+  GetAllQuiz:
+    handler: functions/Quiz/GetAll/index.handler
+    events:
+      - httpApi:
+          path: /quiz
           method: get
+  GetQuiz:
+    handler: functions/Quiz/Get/index.handler
+    events:
+      - httpApi:
+          path: /quiz/{id}
+          method: get
+  DeleteQuiz:
+    handler: functions/Quiz/Delete/index.handler
+    events:
+      - httpApi:
+          path: /quiz/{id}
+          method: delete
+  ## QUESTIONS ROUTES ##
+  AddQuestion:
+    handler: functions/Quiz/Questions/Add/index.handler
+    events:
+      - httpApi:
+          path: /quiz/{id}/questions
+          method: post
+  GetQuestions:
+    handler: functions/Quiz/Questions/Get/index.handler
+    events:
+      - httpApi:
+          path: /quiz/{id}/questions
+          method: get
+  AnswerQuestions:
+    handler: functions/Quiz/Questions/Answer/index.handler
+    events:
+      - httpApi:
+          path: /quiz/{id}/answers
+          method: post
+
+resources:
+  Resources:
+    UsersTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: !Ref USERS_TABLE
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+
+    QuizTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: !Ref QUIZ_TABLE
+        AttributeDefinitions:
+          - AttributeName: username #BYT
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+
+    QuestionsTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: !Ref QUESTIONS_TABLE
+        AttributeDefinitions:
+          - AttributeName: username #BYT
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+
+    LeaderboardTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: !Ref LEADERBOARD_TABLE
+        AttributeDefinitions:
+          - AttributeName: username #BYT
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
