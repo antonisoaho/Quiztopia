@@ -10,7 +10,6 @@ const addQuiz = async (username, quizName) => {
     name: quizName,
     quizId: uuid(),
     createdAt: new Date().toISOString(),
-    questions: [],
     type: 'quiz',
   };
 
