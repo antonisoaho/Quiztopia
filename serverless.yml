@@ -57,7 +57,7 @@ functions:
     handler: functions/Quiz/Get/index.handler
     events:
       - httpApi:
-          path: /quiz/{id}
+          path: /quiz/{username}/{id}
           method: get
   DeleteQuiz:
     handler: functions/Quiz/Delete/index.handler
@@ -72,12 +72,6 @@ functions:
       - httpApi:
           path: /quiz/{id}/questions
           method: post
-  GetQuestions:
-    handler: functions/Quiz/Questions/Get/index.handler
-    events:
-      - httpApi:
-          path: /quiz/{id}/questions
-          method: get
   AnswerQuestions:
     handler: functions/Quiz/Questions/Answer/index.handler
     events:
@@ -103,30 +97,37 @@ resources:
       Properties:
         TableName: !Ref QUIZ_TABLE
         AttributeDefinitions:
-          - AttributeName: username #BYT
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: quizId
+            AttributeType: S
+          - AttributeName: type
             AttributeType: S
         KeySchema:
           - AttributeName: username
             KeyType: HASH
+          - AttributeName: quizId
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: typeIndex
+            KeySchema:
+              - AttributeName: type
+                KeyType: HASH
+            Projection:
+              ProjectionType: INCLUE
+              NonKeyAttributeValues:
+                - username
+                - name
+                - createdAt
+        BillingMode: PAY_PER_REQUEST
 
-    QuestionsTable:
-      Type: 'AWS::DynamoDB::Table'
-      Properties:
-        TableName: !Ref QUESTIONS_TABLE
-        AttributeDefinitions:
-          - AttributeName: username #BYT
-            AttributeType: S
-        KeySchema:
-          - AttributeName: username
-            KeyType: HASH
-
-    LeaderboardTable:
-      Type: 'AWS::DynamoDB::Table'
-      Properties:
-        TableName: !Ref LEADERBOARD_TABLE
-        AttributeDefinitions:
-          - AttributeName: username #BYT
-            AttributeType: S
-        KeySchema:
-          - AttributeName: username
-            KeyType: HASH
+    # LeaderboardTable:
+    #   Type: 'AWS::DynamoDB::Table'
+    #   Properties:
+    #     TableName: !Ref LEADERBOARD_TABLE
+    #     AttributeDefinitions:
+    #       - AttributeName: username #BYT
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: username
+    #         KeyType: HASH
