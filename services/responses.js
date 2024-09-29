@@ -4,7 +4,7 @@ const sendResponse = (statusCode, data) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ data }),
+    body: JSON.stringify(data),
   };
 };
 
@@ -14,7 +14,7 @@ const sendError = (statusCode, data) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ data }),
+    body: JSON.stringify(data),
   };
 };
 
