@@ -1,18 +1,35 @@
 import jwt from 'jsonwebtoken';
+import { sendError } from '../services/responses.js';
 
-const validateToken = {
+export const validateToken = {
   before: async (request) => {
     try {
-      const token = request.event.headers.authorization.replace('Bearer ', '');
+      const serializedToken = request.event.headers.authorization;
+      if (!serializedToken) throw new Error();
 
-      if (!token) throw Error();
+      const token = serializedToken.replace('Bearer ', '');
+      if (!token) throw new Error();
 
       const data = jwt.verify(token, process.env.JWT_KEY);
       request.event.username = data.username;
-
       return request.response;
-    } catch (error) {}
+    } catch (error) {
+      return sendError(401, { error: 'No valid token' });
+    }
   },
 };
 
-export { validateToken };
+export const optionalValidateToken = {
+  before: async (request) => {
+    const serializedToken = request.event.headers.authorization;
+    if (!serializedToken) return request.response;
+
+    const token = serializedToken.replace('Bearer ', '');
+    if (!token) return request.response;
+
+    const data = jwt.verify(token, process.env.JWT_KEY);
+    request.event.username = data.username;
+
+    return request.response;
+  },
+};

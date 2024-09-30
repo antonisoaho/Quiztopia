@@ -1,6 +1,5 @@
-import 'module-alias/register';
 import bcrypt from 'bcryptjs';
-import db from '@services/db';
+import db from '../services/db.js';
 
 const TABLE_NAME = process.env.USERS_TABLE;
 
@@ -17,6 +16,7 @@ const comparePassword = async (hashedPassword, password) => {
 };
 
 const getUser = async (username) => {
+  console.log('TABLE_NAME', TABLE_NAME);
   try {
     const { Item } = await db.get({
       TableName: TABLE_NAME,
@@ -33,12 +33,13 @@ const getUser = async (username) => {
 
 const addUser = async (user) => {
   try {
-    await db.put({
+    console.log('user', user);
+    const ok = await db.put({
       TableName: TABLE_NAME,
-      Item: {
-        user,
-      },
+      Item: user,
     });
+
+    console.log('ok', ok);
     return;
   } catch (error) {
     throw new Error('error connecting to db');

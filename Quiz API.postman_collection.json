@@ -1,0 +1,358 @@
+{
+	"info": {
+		"_postman_id": "1b966c4b-97f4-49b9-b678-bfbaed6b91cf",
+		"name": "Quiz API",
+		"description": "Postman collection för Quiz API med användar-, quiz- och leaderboard-rutter.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31207888"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonResponse = pm.response.json();",
+									"console.log(jsonResponse);",
+									"if (jsonResponse.token) {",
+									"    pm.collectionVariables.set('bearerToken', jsonResponse.token);",
+									"console.log('Bearer token set:', jsonResponse.token);",
+									"}",
+									"if (jsonResponse.username) {",
+									"    pm.collectionVariables.set('username', jsonResponse.username);",
+									"console.log('Bearer token set:', jsonResponse.username);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quiz",
+			"item": [
+				{
+					"name": "Add Quiz",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Göteborgsquizet\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/quiz",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"quiz"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Quiz",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/quiz",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"quiz"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Quiz",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/quiz/:username/:quizId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"quiz",
+								":username",
+								":quizId"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "{{username}}"
+								},
+								{
+									"key": "quizId",
+									"value": "9d758203-2cfc-4308-bcd0-5cbab271ba5d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Quiz",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/quiz/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"quiz",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1695b6bc-9a9b-431e-bd4c-4f36d4070ebb"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Question to Quiz",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "  {\n    \"question\": \"Vilken ikonisk byggnad i Göteborg går ofta under smeknamnet 'Läppstiftet'?\",\n    \"answer\": \"Lilla Bommen\",\n    \"location\": {\n      \"longitude\": 11.9642,\n      \"latitude\": 57.7118\n    }\n  }"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/quiz/:id/questions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"quiz",
+								":id",
+								"questions"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9d758203-2cfc-4308-bcd0-5cbab271ba5d"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Leaderboard",
+			"item": [
+				{
+					"name": "Add Leaderboard Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quizTaker\": \"testuser\",\n    \"score\": 10\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/leaderboard/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"leaderboard",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9f1ddd9e-295f-4872-881f-80cfe1a29c74"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leaderboard Scores",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{bearerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/leaderboard/{{quizId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"leaderboard",
+								"{{quizId}}"
+							],
+							"variable": [
+								{
+									"key": "quizId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://1xf6x0ni98.execute-api.eu-north-1.amazonaws.com/"
+		},
+		{
+			"key": "username",
+			"value": ""
+		},
+		{
+			"key": "bearerToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

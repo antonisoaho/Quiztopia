@@ -1,9 +1,24 @@
-import { sendResponse, sendError } from '../../../../services/responses';
+import middy from '@middy/core';
+import { validateToken } from '../../../middlewares/auth.js';
+import { sendResponse, sendError } from '../../../services/responses.js';
+import { middyTimeoutConfig } from '../../../services/middy.js';
+import { getLeaderboard } from '../../../helpers/LeaderboardHelper.js';
 
-const handler = async (event) => {
-  console.log('event', event);
+const handler = middy(middyTimeoutConfig)
+  .use(validateToken)
+  .handler(async (event) => {
+    try {
+      const { id } = event.pathParameters;
 
-  return sendResponse(200, 'svar');
-};
+      const items = await getLeaderboard(id);
+      if (items && items.length) {
+        items.sort((a, b) => b.score - a.score);
+      }
+
+      return sendResponse(200, items);
+    } catch (error) {
+      return sendError(500, { error: error.message });
+    }
+  });
 
 export { handler };

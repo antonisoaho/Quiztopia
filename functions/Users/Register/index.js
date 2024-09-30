@@ -1,24 +1,35 @@
-import 'module-alias/register';
-import { sendResponse, sendError } from '@services/responses';
-import { getUser, addUser, hashPassword } from '@helpers/UsersHelper';
+import middy from '@middy/core';
+import { sendResponse, sendError } from '../../../services/responses.js';
+import {
+  getUser,
+  addUser,
+  hashPassword,
+} from '../../../helpers/UsersHelper.js';
+import { UserRequest } from '../../../models/UserRequest.js';
+import { requestBodyValidator } from '../../../helpers/ValidationHelper.js';
+import { middyTimeoutConfig } from '../../../services/middy.js';
 
-const handler = async (event) => {
-  const { username, password } = JSON.parse(event.body);
+const handler = middy(middyTimeoutConfig)
+  .use(requestBodyValidator(UserRequest))
+  .handler(async (event) => {
+    const { username, password } = JSON.parse(event.body);
 
-  try {
-    const existingUser = await getUser();
-    if (existingUser)
-      return sendError(400, { error: 'username already exists' });
+    try {
+      const [existingUser, hashedPassword] = await Promise.all([
+        getUser(username),
+        hashPassword(password),
+      ]);
 
-    const hashedPassword = await hashPassword(password);
-    const item = { username, password: hashedPassword };
+      if (existingUser)
+        return sendError(400, { error: 'username already exists' });
 
-    await addUser(item);
+      const item = { username, password: hashedPassword };
+      await addUser(item);
 
-    return sendResponse(200, { success: true });
-  } catch (error) {
-    return sendError(500, { error: error.message });
-  }
-};
+      return sendResponse(200, { success: true });
+    } catch (error) {
+      return sendError(500, { error: error.message });
+    }
+  });
 
 export { handler };

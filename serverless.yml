@@ -8,7 +8,6 @@ provider:
   environment:
     USERS_TABLE: ${env:USERS_TABLE}
     QUIZ_TABLE: ${env:QUIZ_TABLE}
-    QUESTIONS_TABLE: ${env:QUESTIONS_TABLE}
     LEADERBOARD_TABLE: ${env:LEADERBOARD_TABLE}
     JWT_KEY: ${env:JWT_KEY}
   iam:
@@ -17,17 +16,16 @@ provider:
         - Effect: Allow
           Action:
             - dynamodb:Query
-            - dynamodb:Scan
             - dynamodb:GetItem
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - !Sub arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${USERS_TABLE}
-            - !Sub arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${QUIZ_TABLE}
-
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:USERS_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:QUIZ_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:QUIZ_TABLE}/index/*
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:LEADERBOARD_TABLE}
 functions:
-  ## USERS ROUTES ##
   RegisterAccount:
     handler: functions/Users/Register/index.handler
     events:
@@ -40,7 +38,6 @@ functions:
       - httpApi:
           path: /auth/login
           method: post
-  ## QUIZ ROUTES ##
   AddQuiz:
     handler: functions/Quiz/AddQuiz/index.handler
     events:
@@ -65,37 +62,41 @@ functions:
       - httpApi:
           path: /quiz/{id}
           method: delete
-  ## QUESTIONS ROUTES ##
   AddQuestion:
-    handler: functions/Quiz/Questions/Add/index.handler
+    handler: functions/Quiz/AddQuestion/index.handler
     events:
       - httpApi:
           path: /quiz/{id}/questions
           method: post
-  AnswerQuestions:
-    handler: functions/Quiz/Questions/Answer/index.handler
+  AddLeaderboardEntity:
+    handler: functions/Leaderboard/Add/index.handler
     events:
       - httpApi:
-          path: /quiz/{id}/answers
+          path: /leaderboard/{id}
           method: post
-
+  GetLeaderboardHiscores:
+    handler: functions/Leaderboard/Get/index.handler
+    events:
+      - httpApi:
+          path: /leaderboard/{id}
+          method: get
 resources:
   Resources:
     UsersTable:
-      Type: 'AWS::DynamoDB::Table'
+      Type: AWS::DynamoDB::Table
       Properties:
-        TableName: !Ref USERS_TABLE
+        TableName: Quiztopia_Users
         AttributeDefinitions:
           - AttributeName: username
             AttributeType: S
         KeySchema:
           - AttributeName: username
             KeyType: HASH
-
+        BillingMode: PAY_PER_REQUEST
     QuizTable:
-      Type: 'AWS::DynamoDB::Table'
+      Type: AWS::DynamoDB::Table
       Properties:
-        TableName: !Ref QUIZ_TABLE
+        TableName: Quiztopia_Quiz
         AttributeDefinitions:
           - AttributeName: username
             AttributeType: S
@@ -114,20 +115,23 @@ resources:
               - AttributeName: type
                 KeyType: HASH
             Projection:
-              ProjectionType: INCLUE
-              NonKeyAttributeValues:
+              ProjectionType: INCLUDE
+              NonKeyAttributes:
                 - username
-                - name
-                - createdAt
+                - quizId
         BillingMode: PAY_PER_REQUEST
-
-    # LeaderboardTable:
-    #   Type: 'AWS::DynamoDB::Table'
-    #   Properties:
-    #     TableName: !Ref LEADERBOARD_TABLE
-    #     AttributeDefinitions:
-    #       - AttributeName: username #BYT
-    #         AttributeType: S
-    #     KeySchema:
-    #       - AttributeName: username
-    #         KeyType: HASH
+    LeaderboardTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Quiztopia_Leaderboard
+        AttributeDefinitions:
+          - AttributeName: quizId
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: quizId
+            KeyType: HASH
+          - AttributeName: username
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST

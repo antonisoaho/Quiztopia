@@ -1,19 +1,27 @@
-import 'module-alias/register';
-import { sendResponse, sendError } from '@services/responses';
-import signToken from '@services/jwt';
-import { getUser, comparePassword } from '@helpers/UsersHelper';
+import middy from '@middy/core';
+import { sendResponse, sendError } from '../../../services/responses.js';
+import { getUser, comparePassword } from '../../../helpers/UsersHelper.js';
+import { UserRequest } from '../../../models/UserRequest.js';
+import { requestBodyValidator } from '../../../helpers/ValidationHelper.js';
+import { signToken } from '../../../services/jwt.js';
+import { middyTimeoutConfig } from '../../../services/middy.js';
 
-const handler = async (event) => {
-  const { username, password } = JSON.parse(event.body);
+const handler = middy(middyTimeoutConfig)
+  .use(requestBodyValidator(UserRequest))
+  .handler(async (event) => {
+    const { username, password } = JSON.parse(event.body);
 
-  const user = await getUser(username);
+    const user = await getUser(username);
+    const isMatch = await comparePassword(user.password, password);
+    if (!isMatch) return sendError(401, 'Wrong username or password');
 
-  const isMatch = await comparePassword(password, user);
-  if (!isMatch) return sendError(401, 'Wrong username or password');
-
-  const token = signToken(user);
-
-  return sendResponse({ success: true, token });
-};
+    const token = signToken(user.username);
+    console.log('token', token);
+    return sendResponse(200, {
+      success: true,
+      token: token,
+      username: username,
+    });
+  });
 
 export { handler };
