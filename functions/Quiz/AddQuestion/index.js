@@ -3,6 +3,7 @@ import { validateToken } from '../../../middlewares/auth.js';
 import { sendResponse, sendError } from '../../../services/responses.js';
 import {
   addQuestionToQuiz,
+  getQuiz,
   getQuizQuestions,
 } from '../../../helpers/QuizHelper.js';
 import { middyTimeoutConfig } from '../../../services/middy.js';
@@ -28,11 +29,15 @@ const handler = middy(middyTimeoutConfig)
       },
     };
     try {
-      let questions = await getQuizQuestions(username, id);
-      console.log('questions', questions);
+      const quiz = await getQuiz(id);
 
-      const questionExists = questions.length
-        ? questions.some(
+      if (quiz.username != username)
+        return sendError(401, {
+          error: 'Cant add questions to someone elses quiz.',
+        });
+
+      const questionExists = quiz.questions.length
+        ? quiz.questions.some(
             (q) => q.question === newItem.question && q.answer == newItem.answer
           )
         : undefined;
@@ -40,8 +45,9 @@ const handler = middy(middyTimeoutConfig)
       if (questionExists)
         return sendError(400, { error: 'Question already exists.' });
 
-      questions = [...questions, newItem];
-      await addQuestionToQuiz(questions, username, id);
+      const questions = [...quiz.questions, newItem];
+
+      await addQuestionToQuiz(questions, id);
 
       return sendResponse(201, { data: newItem });
     } catch (error) {

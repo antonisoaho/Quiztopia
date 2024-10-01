@@ -3,24 +3,20 @@ import { sendResponse, sendError } from '../../../services/responses.js';
 import { getQuiz } from '../../../helpers/QuizHelper.js';
 import { middyTimeoutConfig } from '../../../services/middy.js';
 import { optionalValidateToken } from '../../../middlewares/auth.js';
+import { uuidValidator } from '../../../middlewares/uuidValidator.js';
 
 const handler = middy(middyTimeoutConfig)
   .use(optionalValidateToken)
+  .use(uuidValidator)
   .handler(async (event) => {
     try {
-      const { id, username } = event.pathParameters;
+      const { id } = event.pathParameters;
 
-      if (!id || !username)
-        return sendError(400, { error: 'Must put in valid pathParameters.' });
-
-      const response = await getQuiz(username, id);
+      const response = await getQuiz(id);
       if (!response) return sendError(404, { error: 'Quiz not found' });
 
       const shouldParseAnswers =
         event.username != response.username && response.questions.length > 0;
-      console.log('event.username', event.username);
-      console.log('response.username', response.username);
-      console.log('shouldParseAnswers', shouldParseAnswers);
       const questions = shouldParseAnswers
         ? response.questions.map((q) => ({
             ...q,

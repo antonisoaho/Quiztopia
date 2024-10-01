@@ -1,11 +1,11 @@
 import middy from '@middy/core';
-import { validateToken } from '../../../middlewares/auth.js';
 import { sendResponse, sendError } from '../../../services/responses.js';
 import { middyTimeoutConfig } from '../../../services/middy.js';
 import { getLeaderboard } from '../../../helpers/LeaderboardHelper.js';
+import { uuidValidator } from '../../../middlewares/uuidValidator.js';
 
 const handler = middy(middyTimeoutConfig)
-  .use(validateToken)
+  .use(uuidValidator)
   .handler(async (event) => {
     try {
       const { id } = event.pathParameters;

@@ -25,6 +25,9 @@ provider:
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:QUIZ_TABLE}
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:QUIZ_TABLE}/index/*
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${env:LEADERBOARD_TABLE}
+package:
+  individually: true
+
 functions:
   RegisterAccount:
     handler: functions/Users/Register/index.handler
@@ -54,7 +57,7 @@ functions:
     handler: functions/Quiz/Get/index.handler
     events:
       - httpApi:
-          path: /quiz/{username}/{id}
+          path: /quiz/{id}
           method: get
   DeleteQuiz:
     handler: functions/Quiz/Delete/index.handler
@@ -98,17 +101,13 @@ resources:
       Properties:
         TableName: Quiztopia_Quiz
         AttributeDefinitions:
-          - AttributeName: username
-            AttributeType: S
           - AttributeName: quizId
             AttributeType: S
           - AttributeName: type
             AttributeType: S
         KeySchema:
-          - AttributeName: username
-            KeyType: HASH
           - AttributeName: quizId
-            KeyType: RANGE
+            KeyType: HASH
         GlobalSecondaryIndexes:
           - IndexName: typeIndex
             KeySchema:
@@ -119,6 +118,7 @@ resources:
               NonKeyAttributes:
                 - username
                 - quizId
+                - name
         BillingMode: PAY_PER_REQUEST
     LeaderboardTable:
       Type: AWS::DynamoDB::Table

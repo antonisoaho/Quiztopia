@@ -45,7 +45,6 @@ const getLeaderboardWithUsername = async (quizId, username) => {
         username: username,
       },
     });
-    console.log('Item in getLeaderboardWithUsername', Item);
     return Item;
   } catch (error) {
     throw error;

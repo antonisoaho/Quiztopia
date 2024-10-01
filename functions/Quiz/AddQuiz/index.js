@@ -11,7 +11,6 @@ const handler = middy(middyTimeoutConfig)
   .use(requestBodyValidator(AddQuizRequest))
   .handler(async (event) => {
     try {
-      console.log('event', event);
       const body = JSON.parse(event.body);
       const item = await addQuiz(event.username, body.name);
 

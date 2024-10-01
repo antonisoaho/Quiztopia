@@ -12,8 +12,10 @@ const handler = middy(middyTimeoutConfig)
     const { username, password } = JSON.parse(event.body);
 
     const user = await getUser(username);
+    if (!user) return sendError(404, { error: 'User not found' });
     const isMatch = await comparePassword(user.password, password);
-    if (!isMatch) return sendError(401, 'Wrong username or password');
+    if (!isMatch)
+      return sendError(401, { error: 'Wrong username or password' });
 
     const token = signToken(user.username);
     console.log('token', token);

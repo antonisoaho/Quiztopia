@@ -50,10 +50,7 @@
 									"    pm.collectionVariables.set('bearerToken', jsonResponse.token);",
 									"console.log('Bearer token set:', jsonResponse.token);",
 									"}",
-									"if (jsonResponse.username) {",
-									"    pm.collectionVariables.set('username', jsonResponse.username);",
-									"console.log('Bearer token set:', jsonResponse.username);",
-									"}"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -92,6 +89,24 @@
 			"item": [
 				{
 					"name": "Add Quiz",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonResponse = pm.response.json();\r",
+									"console.log(jsonResponse);\r",
+									"if (jsonResponse.quizId) {\r",
+									"    pm.collectionVariables.set('lastQuizId', jsonResponse.quizId);\r",
+									"    console.log('Added collectionVariable: ', jsonResponse.quizId)\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -106,7 +121,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Göteborgsquizet\"\n}"
+							"raw": "{\n    \"name\": \"Nytt quiz\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/quiz",
@@ -153,23 +168,18 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/quiz/:username/:quizId",
+							"raw": "{{baseUrl}}/quiz/:id",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"quiz",
-								":username",
-								":quizId"
+								":id"
 							],
 							"variable": [
 								{
-									"key": "username",
-									"value": "{{username}}"
-								},
-								{
-									"key": "quizId",
-									"value": "9d758203-2cfc-4308-bcd0-5cbab271ba5d"
+									"key": "id",
+									"value": "{{lastQuizId}}"
 								}
 							]
 						}
@@ -199,7 +209,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1695b6bc-9a9b-431e-bd4c-4f36d4070ebb"
+									"value": "{{lastQuizId}}"
 								}
 							]
 						}
@@ -222,7 +232,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "  {\n    \"question\": \"Vilken ikonisk byggnad i Göteborg går ofta under smeknamnet 'Läppstiftet'?\",\n    \"answer\": \"Lilla Bommen\",\n    \"location\": {\n      \"longitude\": 11.9642,\n      \"latitude\": 57.7118\n    }\n  }"
+							"raw": "  {\n    \"question\": \"Fråga\",\n    \"answer\": \"svar\",\n    \"location\": {\n      \"longitude\": 0,\n      \"latitude\": 0\n    }\n  }"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/quiz/:id/questions",
@@ -237,7 +247,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "9d758203-2cfc-4308-bcd0-5cbab271ba5d"
+									"value": "{{lastQuizId}}"
 								}
 							]
 						}
@@ -265,7 +275,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"quizTaker\": \"testuser\",\n    \"score\": 10\n}"
+							"raw": "{\n    \"quizTaker\": \"QuizMasterAnton\",\n    \"score\": 1\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/leaderboard/:id",
@@ -279,7 +289,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "9f1ddd9e-295f-4872-881f-80cfe1a29c74"
+									"value": "{{lastQuizId}}"
 								}
 							]
 						}
@@ -297,18 +307,18 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/leaderboard/{{quizId}}",
+							"raw": "{{baseUrl}}/leaderboard/:id",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"leaderboard",
-								"{{quizId}}"
+								":id"
 							],
 							"variable": [
 								{
-									"key": "quizId",
-									"value": ""
+									"key": "id",
+									"value": "{{lastQuizId}}"
 								}
 							]
 						}
@@ -343,14 +353,15 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "https://1xf6x0ni98.execute-api.eu-north-1.amazonaws.com/"
-		},
-		{
-			"key": "username",
 			"value": ""
 		},
 		{
 			"key": "bearerToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "lastQuizId",
 			"value": "",
 			"type": "string"
 		}

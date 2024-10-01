@@ -13,7 +13,7 @@ const handler = middy(middyTimeoutConfig)
   .use(requestBodyValidator(UserRequest))
   .handler(async (event) => {
     const { username, password } = JSON.parse(event.body);
-
+    console.log('username, password', username, password);
     try {
       const [existingUser, hashedPassword] = await Promise.all([
         getUser(username),

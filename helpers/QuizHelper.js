@@ -46,12 +46,11 @@ const getAllQuiz = async () => {
   }
 };
 
-const getQuiz = async (username, quizId) => {
+const getQuiz = async (quizId) => {
   try {
     const { Item } = await db.get({
       TableName: TABLE_NAME,
       Key: {
-        username: username,
         quizId: quizId,
       },
     });
@@ -62,25 +61,22 @@ const getQuiz = async (username, quizId) => {
   }
 };
 
-const getQuizQuestions = async (username, quizId) => {
+const getQuizQuestions = async (quizId) => {
   try {
-    console.log('getQuizQuestions');
-    const Item = await getQuiz(username, quizId);
+    const Item = await getQuiz(quizId);
     if (!Item) return sendError(404, { error: 'Quiz not found' });
+
     return Item.questions || [];
   } catch (error) {
     throw error;
   }
 };
 
-const deleteQuiz = async (username, quizId) => {
+const deleteQuiz = async (quizId) => {
   try {
-    console.log('deleteQuiz');
-
     await db.delete({
       TableName: TABLE_NAME,
       Key: {
-        username: username,
         quizId: quizId,
       },
     });
@@ -91,14 +87,13 @@ const deleteQuiz = async (username, quizId) => {
   }
 };
 
-const addQuestionToQuiz = async (questions, username, quizId) => {
+const addQuestionToQuiz = async (questions, quizId) => {
   try {
-    console.log('addQuestionToQuiz');
-
+    console.log('questions', questions);
+    console.log('quizId', quizId);
     await db.update({
       TableName: TABLE_NAME,
       Key: {
-        username: username,
         quizId: quizId,
       },
       UpdateExpression: 'set questions = :questions',

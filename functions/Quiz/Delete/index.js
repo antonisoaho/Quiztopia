@@ -11,10 +11,13 @@ const handler = middy(middyTimeoutConfig)
       const { id } = event.pathParameters;
       const username = event.username;
 
-      const Item = await getQuiz(username, id);
+      const Item = await getQuiz(id);
       if (!Item) throw new Error('Could not find quiz');
 
-      await deleteQuiz(username, id);
+      if (Item.username != username)
+        return sendResponse(404, 'Quiz with relation to your user not found');
+
+      await deleteQuiz(id);
       return sendResponse(204, '');
     } catch (error) {
       return sendError(500, { error: error.message });

@@ -26,10 +26,12 @@ export const optionalValidateToken = {
 
     const token = serializedToken.replace('Bearer ', '');
     if (!token) return request.response;
-
-    const data = jwt.verify(token, process.env.JWT_KEY);
-    request.event.username = data.username;
-
-    return request.response;
+    try {
+      const data = jwt.verify(token, process.env.JWT_KEY);
+      request.event.username = data.username;
+      return request.response;
+    } catch (error) {
+      return;
+    }
   },
 };
