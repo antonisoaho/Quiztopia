@@ -2,12 +2,16 @@ import { validate } from 'uuid';
 
 export const uuidValidator = {
   before: (request) => {
-    const { id } = request.event.pathParameters;
-    if (!validate(id))
-      return sendError(400, {
-        error: `Need correct format in path, current: ${id}`,
-      });
+    try {
+      const { id } = request.event.pathParameters;
+      if (!validate(id))
+        return sendError(400, {
+          error: `Need correct format in path, current: ${id}`,
+        });
 
-    return request.response;
+      return request.response;
+    } catch (error) {
+      return sendResponse(400, { error: 'Could not find ID in parameter' });
+    }
   },
 };

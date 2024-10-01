@@ -9,9 +9,11 @@ import {
 import { middyTimeoutConfig } from '../../../services/middy.js';
 import { requestBodyValidator } from '../../../helpers/ValidationHelper.js';
 import { AddQuestionRequest } from '../../../models/AddQuestionRequest.js';
+import { uuidValidator } from '../../../middlewares/uuidValidator.js';
 
 const handler = middy(middyTimeoutConfig)
   .use(validateToken)
+  .use(uuidValidator)
   .use(requestBodyValidator(AddQuestionRequest))
   .handler(async (event) => {
     const { id } = event.pathParameters;
